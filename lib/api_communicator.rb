@@ -2,20 +2,37 @@ require 'rest-client'
 require 'json'
 require 'pry'
 
+$results = Hash.new { |h, k| h[k] = [] }
+
 def getJSON(url)
   response_string = RestClient.get(url)
   response_hash = JSON.parse(response_string)
 end
 
-def getFilms(character_name)
-  films = nil
-  response = getJSON('http://www.swapi.co/api/people/')
+def getAllCharacters(url = 'http://www.swapi.co/api/people/')
+  response = getJSON(url)
+  names = []
   response["results"].each do |character|
-    if character["name"] == character_name
-      films = character["films"]
-    end
+    $results[character["name"]] = character["films"]
+    names << character["name"]
   end
-  return films
+  p names
+
+  if response["next"] != nil
+    getAllCharacters(response["next"])
+  end
+end
+
+def getFilms(character_name)
+  # films = nil
+  # $results.each do |character|
+  #   if character["name"] == character_name
+  #     films = character["films"]
+  #   end
+  # end
+  # return films
+  $results[character_name]
+
 end
 
 def get_character_movies_from_api(character_name)
